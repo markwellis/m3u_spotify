@@ -31,7 +31,7 @@ fn main() -> std::io::Result<()> {
     let playlist_name = format!("playlist {}", now);
     let playlist = spotify.user_playlist_create(user_id, &playlist_name, false, None).unwrap();
 
-    let mut file = File::open("/home/mark/Documents/music/good.m3u")?;
+    let mut file = File::open("/home/mark/Documents/music/remaining.m3u")?;
     let mut buffer = String::new();
 
     file.read_to_string(&mut buffer)?;
@@ -78,7 +78,10 @@ fn main() -> std::io::Result<()> {
                 // println!("{}", query);
                 // println!("search result: {}", track.uri);
                 if let Some(track_id) = track.id.clone() {
-                    spotify.user_playlist_add_tracks(user_id, &playlist.id, &[track_id], None).unwrap();
+                    match spotify.user_playlist_add_tracks(user_id, &playlist.id, &[track_id], None) {
+                        Ok(v)  => continue,
+                        Err(e) => println!("error adding {} to playlist {}", track_id, e),
+                    };
                 }
                 else {
                     println!("failed to add {} - {} to playlist", query, track.uri)
@@ -90,7 +93,7 @@ fn main() -> std::io::Result<()> {
         };
 
         //sleep so we don't get rate limited
-        thread::sleep(time::Duration::from_secs(2));
+        thread::sleep(time::Duration::from_secs(1));
     }
 
     Ok(())
